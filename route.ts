@@ -1,0 +1,2 @@
+import QRCode from "qrcode";
+export async function GET(request:Request){const {searchParams,origin}=new URL(request.url);const slug=(searchParams.get("slug")||"").replace(/[^a-z0-9-]/gi,"").slice(0,80);if(!slug)return new Response("Missing slug",{status:400});const base=process.env.NEXT_PUBLIC_APP_URL||origin;const svg=await QRCode.toString(`${base}/p/${slug}`,{type:"svg",margin:1,color:{dark:"#152c2a",light:"#fffdf7"}});return new Response(svg,{headers:{"content-type":"image/svg+xml","cache-control":"public, max-age=3600"}})}

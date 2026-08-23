@@ -1,0 +1,3 @@
+import {NextResponse} from "next/server"; import {z} from "zod"; import {createLead} from "@/lib/db";
+const schema=z.object({profileSlug:z.string().min(2).max(80),name:z.string().min(2).max(100),email:z.string().email().or(z.literal("")),phone:z.string().max(40).default(""),message:z.string().max(1000).default("")}).refine(x=>x.email||x.phone,{message:"Email or phone required"});
+export async function POST(request:Request){try{const input=schema.parse(await request.json());return NextResponse.json(await createLead(input),{status:201});}catch{return NextResponse.json({error:"Invalid lead"},{status:400});}}
