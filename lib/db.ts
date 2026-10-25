@@ -29,13 +29,15 @@ export async function listLeads(): Promise<Lead[]> {
   return rows.map(r=>({id:r.id,profileSlug:r.profile_slug,name:r.name,email:r.email,phone:r.phone,message:r.message,createdAt:r.created_at}));
 }
 
-const demoTokens = new Map<string,{profileSlug:string;packSlug:string;recipientEmail:string;expiresAt:string;status:"pending"|"accepted"|"revoked"}>();
 async function tokenHash(token:string){const data=new TextEncoder().encode(token);const digest=await crypto.subtle.digest("SHA-256",data);return Buffer.from(digest).toString("hex");}
+async function demoSignature(payload:string){const key=await crypto.subtle.importKey("raw",new TextEncoder().encode(process.env.SESSION_SECRET||"local-kopycat-secret"),{name:"HMAC",hash:"SHA-256"},false,["sign"]);return Buffer.from(await crypto.subtle.sign("HMAC",key,new TextEncoder().encode(payload))).toString("base64url");}
+async function createDemoToken(profileSlug:string,packSlug:string,recipientEmail:string,expiresAt:string){const payload=Buffer.from(JSON.stringify({profileSlug,packSlug,recipientEmail,expiresAt})).toString("base64url");return `${payload}.${await demoSignature(payload)}`;}
+async function readDemoToken(token:string){try{const [payload,signature]=token.split(".");if(!payload||!signature||signature!==await demoSignature(payload))return null;return JSON.parse(Buffer.from(payload,"base64url").toString()) as {profileSlug:string;packSlug:string;recipientEmail:string;expiresAt:string;status?:"pending"};}catch{return null;}}
 
 export async function createTransfer(profileSlug:string,packSlug:string,recipientEmail:string){
-  const token=Buffer.from(crypto.getRandomValues(new Uint8Array(24))).toString("base64url");
   const expiresAt=new Date(Date.now()+24*60*60*1000).toISOString();
-  if(!sql){demoTokens.set(token,{profileSlug,packSlug,recipientEmail,expiresAt,status:"pending"});return {token,expiresAt,demo:true};}
+  if(!sql)return {token:await createDemoToken(profileSlug,packSlug,recipientEmail,expiresAt),expiresAt,demo:true};
+  const token=Buffer.from(crypto.getRandomValues(new Uint8Array(24))).toString("base64url");
   const hash=await tokenHash(token);
   await sql`INSERT INTO transfers (token_hash,profile_slug,pack_slug,recipient_email,expires_at) VALUES (${hash},${profileSlug},${packSlug},${recipientEmail},${expiresAt})`;
   return {token,expiresAt};
@@ -43,7 +45,7 @@ export async function createTransfer(profileSlug:string,packSlug:string,recipien
 
 export async function getTransfer(token:string):Promise<TransferPreview|null>{
   let record:{profileSlug:string;packSlug:string;recipientEmail:string;expiresAt:string;status:"pending"|"accepted"|"revoked"}|null=null;
-  if(!sql)record=demoTokens.get(token)||null;
+  if(!sql){const decoded=await readDemoToken(token);if(decoded)record={...decoded,status:"pending"};}
   else{const rows=await sql`SELECT profile_slug,pack_slug,recipient_email,status,expires_at FROM transfers WHERE token_hash=${await tokenHash(token)} LIMIT 1`;if(rows[0])record={profileSlug:rows[0].profile_slug,packSlug:rows[0].pack_slug,recipientEmail:rows[0].recipient_email,status:rows[0].status,expiresAt:new Date(rows[0].expires_at).toISOString()};}
   if(!record)return null;
   const profile=await getProfile(record.profileSlug);const pack=profile?.packs.find(p=>p.slug===record!.packSlug);if(!profile||!pack)return null;
@@ -53,7 +55,7 @@ export async function getTransfer(token:string):Promise<TransferPreview|null>{
 
 export async function acceptTransfer(token:string,recipientEmail:string){
   const preview=await getTransfer(token);if(!preview||preview.status!=="pending")return null;
-  if(!sql){const row=demoTokens.get(token);if(row){row.status="accepted";row.recipientEmail=recipientEmail;}return {...preview,status:"accepted" as const,recipientEmail,demo:true};}
+  if(!sql)return {...preview,status:"accepted" as const,recipientEmail,demo:true};
   const rows=await sql`UPDATE transfers SET status='accepted',recipient_email=${recipientEmail},accepted_at=now() WHERE token_hash=${await tokenHash(token)} AND status='pending' AND expires_at>now() RETURNING id`;
   return rows[0]?{...preview,status:"accepted" as const,recipientEmail}:null;
 }
