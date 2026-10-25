@@ -1,6 +1,6 @@
-# KopiKat
+# KopyCat
 
-KopiKat is a professional handoff app. A QR scan or NFC tap opens a shareable profile containing contact details, reusable KopiPaks, documents, links and a lead form. The recipient does not need an account or app.
+KopyCat is a professional handoff app. A QR scan or NFC tap opens a shareable profile containing contact details, reusable KopyPaks, documents, links and a lead form. The recipient does not need an account or app.
 
 ## Run locally
 
@@ -10,7 +10,7 @@ cp .env.example .env.local
 npm run dev
 ```
 
-The project runs without a database using the built-in Maya Rodriguez demo. Open `/p/maya-homes`. The demo dashboard credentials are `demo@kopikat.app` / `kopikat-demo`.
+The project runs without a database using the built-in Maya Rodriguez demo. Open `/p/maya-homes`. The demo dashboard credentials are `demo@kopycat.app` / `kopycat-demo`.
 
 ## Connect Neon
 
@@ -23,11 +23,11 @@ When `DATABASE_URL` is present, profile reads and lead submissions use PostgreSQ
 
 ## Deploy
 
-Push the folder to GitHub, import the repository in Vercel, add the environment variables, and deploy. Program NFC cards with a public URL such as `https://kopikat.app/p/maya-homes`; the NFC tag does not store private documents.
+Push the folder to GitHub, import the repository in Vercel, add the environment variables, and deploy. Program NFC cards with a public URL such as `https://kopycat.app/p/maya-homes`; the NFC tag does not store private documents.
 
 ## Included backend
 
-- PostgreSQL schema for profiles, KopiPaks, documents and leads
+- PostgreSQL schema for profiles, KopyPaks, documents and leads
 - Validated `POST /api/leads` endpoint
 - Signed, HTTP-only admin session
 - Protected `/dashboard`
