@@ -10,16 +10,17 @@ cp .env.example .env.local
 npm run dev
 ```
 
-Add `ADMIN_EMAIL`, `ADMIN_PASSWORD`, and `SESSION_SECRET` to `.env.local` before using the professional portal. Open `/p/maya-homes` to preview the sample public profile.
+Add the Supabase values from `.env.example` to `.env.local` before using the professional portal.
 
-## Connect Neon
+## Connect Supabase
 
-1. Create a Neon PostgreSQL database.
-2. Run `db/schema.sql` in the Neon SQL Editor.
-3. Add the Neon connection string as `DATABASE_URL` in `.env.local` and Vercel.
-4. Add secure values for `ADMIN_EMAIL`, `ADMIN_PASSWORD`, and `SESSION_SECRET`.
+1. Create a Supabase project and run `db/schema.sql` in the SQL Editor.
+2. Add `SUPABASE_URL` and `SUPABASE_PUBLISHABLE_KEY` in `.env.local` and Vercel.
+3. Set `NEXT_PUBLIC_APP_URL` to the deployed KopyCat URL.
+4. In Supabase Authentication, set the Site URL to the deployed URL and allow `/reset-password` as a redirect URL.
+5. Invite or create the first portal user in Supabase Authentication.
 
-When `DATABASE_URL` is present, profile reads, lead submissions, and secure password recovery use PostgreSQL automatically.
+Portal sign-in and password recovery use Supabase Auth. Add a PostgreSQL `DATABASE_URL` when you are ready to persist profiles, KopyPaks, documents, leads, and phone transfers.
 
 ## Deploy
 
@@ -29,10 +30,10 @@ Push the folder to GitHub, import the repository in Vercel, add the environment 
 
 - PostgreSQL schema for profiles, KopyPaks, documents and leads
 - Validated `POST /api/leads` endpoint
-- Signed, HTTP-only admin session
+- Supabase Auth with HTTP-only session cookies
 - Protected `/dashboard`
-- Database-aware repository with secure administrator authentication
+- Bilingual password recovery flow
 
 ## Production follow-up
 
-Before public launch, replace the single-admin login with Clerk or Auth.js, add Vercel Blob direct uploads, add per-account ownership checks, and generate real QR image files for print.
+Before public launch, add Vercel Blob direct uploads, add per-account ownership policies, and generate print-ready QR image files.
