@@ -10,7 +10,7 @@ cp .env.example .env.local
 npm run dev
 ```
 
-The project runs without a database using the built-in Maya Rodriguez demo. Open `/p/maya-homes`. The demo dashboard credentials are `demo@kopycat.app` / `kopycat-demo`.
+Add `ADMIN_EMAIL`, `ADMIN_PASSWORD`, and `SESSION_SECRET` to `.env.local` before using the professional portal. Open `/p/maya-homes` to preview the sample public profile.
 
 ## Connect Neon
 
@@ -19,7 +19,7 @@ The project runs without a database using the built-in Maya Rodriguez demo. Open
 3. Add the Neon connection string as `DATABASE_URL` in `.env.local` and Vercel.
 4. Add secure values for `ADMIN_EMAIL`, `ADMIN_PASSWORD`, and `SESSION_SECRET`.
 
-When `DATABASE_URL` is present, profile reads and lead submissions use PostgreSQL automatically. Without it, the public design and API remain testable in demo mode.
+When `DATABASE_URL` is present, profile reads, lead submissions, and secure password recovery use PostgreSQL automatically.
 
 ## Deploy
 
@@ -31,7 +31,7 @@ Push the folder to GitHub, import the repository in Vercel, add the environment 
 - Validated `POST /api/leads` endpoint
 - Signed, HTTP-only admin session
 - Protected `/dashboard`
-- Database-aware repository with local demo fallback
+- Database-aware repository with secure administrator authentication
 
 ## Production follow-up
 
