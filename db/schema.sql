@@ -18,3 +18,20 @@ CREATE TABLE IF NOT EXISTS transfers (
 );
 CREATE INDEX IF NOT EXISTS transfers_profile_created_idx ON transfers(profile_slug,created_at DESC);
 CREATE INDEX IF NOT EXISTS transfers_recipient_idx ON transfers(lower(recipient_email),created_at DESC);
+
+CREATE TABLE IF NOT EXISTS admin_credentials (
+  email text PRIMARY KEY,
+  password_hash text NOT NULL,
+  created_at timestamptz NOT NULL DEFAULT now(),
+  updated_at timestamptz NOT NULL DEFAULT now()
+);
+
+CREATE TABLE IF NOT EXISTS password_reset_tokens (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  email text NOT NULL REFERENCES admin_credentials(email) ON DELETE CASCADE,
+  token_hash text UNIQUE NOT NULL,
+  expires_at timestamptz NOT NULL,
+  used_at timestamptz,
+  created_at timestamptz NOT NULL DEFAULT now()
+);
+CREATE INDEX IF NOT EXISTS password_reset_tokens_lookup_idx ON password_reset_tokens(token_hash,expires_at);
