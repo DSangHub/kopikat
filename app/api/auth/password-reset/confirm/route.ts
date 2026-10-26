@@ -1,0 +1,3 @@
+import {NextResponse} from "next/server";import {z} from "zod";import {completePasswordReset} from "@/lib/admin-auth";
+const schema=z.object({token:z.string().min(20),password:z.string().min(10).max(200)});
+export async function POST(request:Request){const parsed=schema.safeParse(await request.json().catch(()=>null));if(!parsed.success)return NextResponse.json({error:"Invalid reset request."},{status:400});if(!await completePasswordReset(parsed.data.token,parsed.data.password))return NextResponse.json({error:"This reset link is invalid or expired."},{status:400});return NextResponse.json({ok:true});}
