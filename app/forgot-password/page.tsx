@@ -1,0 +1,2 @@
+import LanguageToggle from "@/components/LanguageToggle";import ResetRequestForm from "@/components/ResetRequestForm";import {getLocale} from "@/lib/i18n";
+export default async function ForgotPassword(){const locale=await getLocale();return <main className="authPage"><a className="brand" href="/"><span>K</span>KopyCat</a><div className="authLanguage"><LanguageToggle locale={locale}/></div><ResetRequestForm locale={locale}/></main>}
