@@ -1,0 +1,2 @@
+import LanguageToggle from "@/components/LanguageToggle";import ResetPasswordForm from "@/components/ResetPasswordForm";import {getLocale} from "@/lib/i18n";
+export default async function ResetPassword({searchParams}:{searchParams:Promise<{token?:string}>}){const [locale,query]=await Promise.all([getLocale(),searchParams]);return <main className="authPage"><a className="brand" href="/"><span>K</span>KopyCat</a><div className="authLanguage"><LanguageToggle locale={locale}/></div><ResetPasswordForm token={query.token||""} locale={locale}/></main>}
