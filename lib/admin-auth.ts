@@ -1,7 +1,7 @@
-import {neon} from "@neondatabase/serverless";
+import postgres from "postgres";
 import {createHash,randomBytes,scryptSync,timingSafeEqual} from "node:crypto";
 
-const sql=process.env.DATABASE_URL?neon(process.env.DATABASE_URL):null;
+const sql=process.env.DATABASE_URL?postgres(process.env.DATABASE_URL,{prepare:false,max:1,ssl:"require"}):null;
 
 function passwordHash(password:string){const salt=randomBytes(16).toString("hex");const hash=scryptSync(password,salt,64).toString("hex");return `${salt}:${hash}`;}
 function verifyHash(password:string,stored:string){try{const [salt,hash]=stored.split(":");const expected=Buffer.from(hash,"hex");const actual=scryptSync(password,salt,64);return expected.length===actual.length&&timingSafeEqual(expected,actual);}catch{return false;}}
