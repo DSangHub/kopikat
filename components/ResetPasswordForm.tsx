@@ -1,0 +1,9 @@
+"use client";
+
+import {useState} from "react";
+
+export default function ResetPasswordForm({token,locale}:{token:string;locale:"en"|"es"}){
+  const es=locale==="es";const [password,setPassword]=useState("");const [visible,setVisible]=useState(false);const [status,setStatus]=useState("");const [done,setDone]=useState(false);
+  async function submit(){setStatus(es?"Guardando…":"Saving…");const response=await fetch("/api/auth/password-reset/confirm",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({token,password})});const data=await response.json();if(response.ok){setDone(true);setStatus(es?"Tu contraseña fue actualizada.":"Your password has been updated.");}else setStatus(data.error||(es?"El enlace no es válido o venció.":"The link is invalid or expired."));}
+  return <div className="authCard"><small>{es?"NUEVA CONTRASEÑA":"NEW PASSWORD"}</small><h1>{done?(es?"Contraseña actualizada.":"Password updated."):(es?"Crea una contraseña nueva.":"Create a new password.")}</h1>{done?<><p>{status}</p><a className="primary" href="/login">{es?"Iniciar sesión →":"Sign in →"}</a></>:<><p>{es?"Usa por lo menos 10 caracteres.":"Use at least 10 characters."}</p><label>{es?"Nueva contraseña":"New password"}<span className="passwordField"><input type={visible?"text":"password"} value={password} onChange={e=>setPassword(e.target.value)} minLength={10} autoComplete="new-password" required/><button type="button" onClick={()=>setVisible(!visible)} aria-label={visible?"Hide password":"Show password"}><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6S2 12 2 12Z"/><circle cx="12" cy="12" r="3"/>{visible&&<path d="m4 4 16 16"/>}</svg></button></span></label><button className="primary" onClick={submit} disabled={password.length<10}>{es?"Guardar contraseña →":"Save password →"}</button>{status&&<p className="formStatus" role="status">{status}</p>}</>}</div>;
+}
