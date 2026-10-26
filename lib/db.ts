@@ -1,9 +1,9 @@
-import { neon } from "@neondatabase/serverless";
+import postgres from "postgres";
 import { demoProfile } from "./demo";
 import type { Lead, Profile, TransferPreview } from "./types";
 
 const dbUrl = process.env.DATABASE_URL;
-const sql = dbUrl ? neon(dbUrl) : null;
+const sql = dbUrl ? postgres(dbUrl, {prepare:false,max:1,ssl:"require"}) : null;
 export const hasDatabase = Boolean(sql);
 
 export async function getProfile(slug: string): Promise<Profile | null> {
