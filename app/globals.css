@@ -455,6 +455,50 @@ small {
   font-size: 12px;
   font-weight: 800;
 }
+.passwordField {
+  display: flex;
+  position: relative;
+}
+.passwordField input {
+  width: 100%;
+  padding-right: 48px;
+}
+.passwordField button {
+  position: absolute;
+  right: 4px;
+  top: 4px;
+  bottom: 4px;
+  width: 40px;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: #52635f;
+  cursor: pointer;
+}
+.passwordField svg {
+  width: 21px;
+  height: 21px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.authLink {
+  color: #315f58;
+  font-size: 13px;
+  font-weight: 800;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.authError {
+  margin: 0;
+  padding: 10px 12px;
+  border-radius: 7px;
+  background: #ffe7e1;
+  color: #8e2d1c;
+  font-size: 13px;
+}
 .dashboard {
   min-height: 100vh;
   display: grid;
