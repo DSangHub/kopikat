@@ -5,14 +5,27 @@ const REFRESH_COOKIE="kopycat_refresh_token";
 const url=process.env.SUPABASE_URL||process.env.NEXT_PUBLIC_SUPABASE_URL;
 const key=process.env.SUPABASE_PUBLISHABLE_KEY||process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
 
+type AuthSession={access_token:string;refresh_token:string;expires_in:number};
+
 export async function signInWithPassword(email:string,password:string){
   if(!url||!key)return null;
   const response=await fetch(`${url}/auth/v1/token?grant_type=password`,{method:"POST",headers:{apikey:key,"content-type":"application/json"},body:JSON.stringify({email,password}),cache:"no-store"});
   if(!response.ok)return null;
-  return response.json() as Promise<{access_token:string;refresh_token:string;expires_in:number}>;
+  return response.json() as Promise<AuthSession>;
 }
 
-export async function setAuthSession(session:{access_token:string;refresh_token:string;expires_in:number}){
+export async function signUpWithPassword(email:string,password:string){
+  if(!url||!key)return {ok:false as const,session:null};
+  const appUrl=process.env.NEXT_PUBLIC_APP_URL?.replace(/\/$/,"");
+  const endpoint=`${url}/auth/v1/signup${appUrl?`?redirect_to=${encodeURIComponent(`${appUrl}/dashboard`)}`:""}`;
+  const response=await fetch(endpoint,{method:"POST",headers:{apikey:key,"content-type":"application/json"},body:JSON.stringify({email,password}),cache:"no-store"});
+  if(!response.ok)return {ok:false as const,session:null};
+  const payload=await response.json() as Partial<AuthSession>;
+  const session=payload.access_token&&payload.refresh_token&&payload.expires_in?{access_token:payload.access_token,refresh_token:payload.refresh_token,expires_in:payload.expires_in}:null;
+  return {ok:true as const,session};
+}
+
+export async function setAuthSession(session:AuthSession){
   const jar=await cookies();const secure=process.env.NODE_ENV==="production";
   jar.set(ACCESS_COOKIE,session.access_token,{httpOnly:true,sameSite:"lax",secure,path:"/",maxAge:session.expires_in});
   jar.set(REFRESH_COOKIE,session.refresh_token,{httpOnly:true,sameSite:"lax",secure,path:"/",maxAge:60*60*24*30});
