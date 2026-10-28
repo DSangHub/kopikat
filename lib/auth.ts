@@ -3,9 +3,10 @@ import {cookies} from "next/headers";
 const ACCESS_COOKIE="kopycat_access_token";
 const REFRESH_COOKIE="kopycat_refresh_token";
 const url=process.env.SUPABASE_URL||process.env.NEXT_PUBLIC_SUPABASE_URL;
-const key=process.env.SUPABASE_PUBLISHABLE_KEY||process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
+const key=process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY||process.env.SUPABASE_PUBLISHABLE_KEY;
 
 type AuthSession={access_token:string;refresh_token:string;expires_in:number};
+type SignupError="configuration"|"rate_limit"|"disabled"|"weak_password"|"email_exists"|"unknown";
 
 export async function signInWithPassword(email:string,password:string){
   if(!url||!key)return null;
@@ -15,14 +16,23 @@ export async function signInWithPassword(email:string,password:string){
 }
 
 export async function signUpWithPassword(email:string,password:string){
-  if(!url||!key)return {ok:false as const,session:null};
+  if(!url||!key)return {ok:false as const,session:null,error:"configuration" as SignupError};
   const appUrl=process.env.NEXT_PUBLIC_APP_URL?.replace(/\/$/,"");
   const endpoint=`${url}/auth/v1/signup${appUrl?`?redirect_to=${encodeURIComponent(`${appUrl}/dashboard`)}`:""}`;
   const response=await fetch(endpoint,{method:"POST",headers:{apikey:key,"content-type":"application/json"},body:JSON.stringify({email,password}),cache:"no-store"});
-  if(!response.ok)return {ok:false as const,session:null};
-  const payload=await response.json() as Partial<AuthSession>;
+  const payload=await response.json().catch(()=>({})) as Partial<AuthSession>&{code?:string;error_code?:string};
+  if(!response.ok){
+    const code=String(payload.code||payload.error_code||"");
+    let error:SignupError="unknown";
+    if(response.status===429||code.includes("rate"))error="rate_limit";
+    else if(code.includes("signup_disabled")||code.includes("not_allowed"))error="disabled";
+    else if(code.includes("weak_password"))error="weak_password";
+    else if(code.includes("user_already_exists"))error="email_exists";
+    console.error("Supabase signup failed",{status:response.status,reason:error});
+    return {ok:false as const,session:null,error};
+  }
   const session=payload.access_token&&payload.refresh_token&&payload.expires_in?{access_token:payload.access_token,refresh_token:payload.refresh_token,expires_in:payload.expires_in}:null;
-  return {ok:true as const,session};
+  return {ok:true as const,session,error:null};
 }
 
 export async function setAuthSession(session:AuthSession){
