@@ -1,6 +1,6 @@
-import type { CapacitorConfig } from '@capacitor/cli';
 
-const config: CapacitorConfig = {
+
+const config = {
   appId: 'app.kopycat',
   appName: 'KopyCat',
   webDir: 'out',
