@@ -19,15 +19,16 @@ export async function signUpWithPassword(email:string,password:string){
   const appUrl=process.env.NEXT_PUBLIC_APP_URL?.replace(/\/$/,"");
   const endpoint=`${url}/auth/v1/signup${appUrl?`?redirect_to=${encodeURIComponent(`${appUrl}/dashboard`)}`:""}`;
   const response=await fetch(endpoint,{method:"POST",headers:{apikey:key,"content-type":"application/json"},body:JSON.stringify({email,password}),cache:"no-store"});
-  const payload=await response.json().catch(()=>({})) as Partial<AuthSession>&{code?:string;error_code?:string};
+  const payload=await response.json().catch(()=>({})) as Partial<AuthSession>&{code?:string;error_code?:string;message?:string;msg?:string};
   if(!response.ok){
-    const code=String(payload.code||payload.error_code||"");
+    const code=String(payload.code||payload.error_code||"").toLowerCase();
+    const message=String(payload.message||payload.msg||"").toLowerCase();
     let error:SignupError="unknown";
     if(code.includes("email_address_not_authorized"))error="email_not_authorized";
     else if(response.status===429||code.includes("rate"))error="rate_limit";
     else if(code.includes("signup_disabled")||code.includes("not_allowed"))error="disabled";
     else if(code.includes("weak_password"))error="weak_password";
-    else if(code.includes("user_already_exists"))error="email_exists";
+    else if(code.includes("user_already_exists")||code.includes("email_exists")||message.includes("already registered")||message.includes("already exists"))error="email_exists";
     console.error("Supabase signup failed",{status:response.status,reason:error});
     return {ok:false as const,session:null,error};
   }
