@@ -5,8 +5,7 @@ const REFRESH_COOKIE="kopycat_refresh_token";
 const url=process.env.SUPABASE_URL||process.env.NEXT_PUBLIC_SUPABASE_URL;
 const key=process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY||process.env.SUPABASE_PUBLISHABLE_KEY;
 
-type AuthSession={access_token:string;refresh_token:string;expires_in:number};
-type SignupError="configuration"|"rate_limit"|"disabled"|"weak_password"|"email_exists"|"unknown";
+type AuthSession={access_token:string;refresh_token:string;expires_in:number};type SignupError="configuration"|"rate_limit"|"email_not_authorized"|"disabled"|"weak_password"|"email_exists"|"unknown";
 
 export async function signInWithPassword(email:string,password:string){
   if(!url||!key)return null;
@@ -24,7 +23,8 @@ export async function signUpWithPassword(email:string,password:string){
   if(!response.ok){
     const code=String(payload.code||payload.error_code||"");
     let error:SignupError="unknown";
-    if(response.status===429||code.includes("rate"))error="rate_limit";
+    if(code.includes("email_address_not_authorized"))error="email_not_authorized";
+    else if(response.status===429||code.includes("rate"))error="rate_limit";
     else if(code.includes("signup_disabled")||code.includes("not_allowed"))error="disabled";
     else if(code.includes("weak_password"))error="weak_password";
     else if(code.includes("user_already_exists"))error="email_exists";
