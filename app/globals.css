@@ -699,3 +699,63 @@ small {
     font-size: 39px;
   }
 }
+
+.authPasswordForm,
+.authSocialForm {
+  display: flex;
+  flex-direction: column;
+  gap: 13px;
+}
+.authSocialForm > span {
+  color: #52635f;
+  font-size: 12px;
+  font-weight: 800;
+  text-align: center;
+}
+.socialButtons {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+}
+.socialButton {
+  min-height: 44px;
+  border: 1px solid var(--line);
+  border-radius: 7px;
+  background: white;
+  color: var(--ink);
+  cursor: pointer;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 800;
+}
+.socialButton:hover,
+.socialButton:focus-visible {
+  border-color: #315f58;
+  box-shadow: 0 0 0 2px #b9e5d9;
+}
+.socialButton b {
+  display: inline-block;
+  margin-right: 6px;
+  font-size: 16px;
+}
+.authDivider {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: #7c8b88;
+  font-size: 11px;
+  text-transform: uppercase;
+}
+.authDivider::before,
+.authDivider::after {
+  content: "";
+  height: 1px;
+  flex: 1;
+  background: var(--line);
+}
+.authSignupLink {
+  text-align: center;
+}
+@media (max-width: 520px) {
+  .socialButtons { grid-template-columns: 1fr; }
+}
