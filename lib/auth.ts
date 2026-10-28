@@ -1,16 +1,47 @@
-import {cookies} from "next/headers";
+import {createHash,randomBytes} from "node:crypto";
+import {cookies,headers} from "next/headers";
 
 const ACCESS_COOKIE="kopycat_access_token";
 const REFRESH_COOKIE="kopycat_refresh_token";
+const OAUTH_VERIFIER_COOKIE="kopycat_oauth_verifier";
 const url=process.env.SUPABASE_URL||process.env.NEXT_PUBLIC_SUPABASE_URL;
 const key=process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY||process.env.SUPABASE_PUBLISHABLE_KEY;
 
-type AuthSession={access_token:string;refresh_token:string;expires_in:number};type SignupError="configuration"|"rate_limit"|"email_not_authorized"|"disabled"|"weak_password"|"email_exists"|"unknown";
+export type OAuthProvider="google"|"apple"|"facebook";
+type AuthSession={access_token:string;refresh_token:string;expires_in:number};
+type SignupError="configuration"|"rate_limit"|"email_not_authorized"|"disabled"|"weak_password"|"email_exists"|"unknown";
 
 export async function signInWithPassword(email:string,password:string){
   if(!url||!key)return null;
   const response=await fetch(`${url}/auth/v1/token?grant_type=password`,{method:"POST",headers:{apikey:key,"content-type":"application/json"},body:JSON.stringify({email,password}),cache:"no-store"});
   if(!response.ok)return null;
+  return response.json() as Promise<AuthSession>;
+}
+
+export async function getOAuthUrl(provider:OAuthProvider){
+  if(!url||!key)return null;
+  const verifier=randomBytes(32).toString("base64url");
+  const challenge=createHash("sha256").update(verifier).digest("base64url");
+  const configuredOrigin=process.env.NEXT_PUBLIC_APP_URL?.replace(/\/$/,"");
+  const requestHeaders=await headers();
+  const host=requestHeaders.get("x-forwarded-host")||requestHeaders.get("host");
+  const protocol=requestHeaders.get("x-forwarded-proto")||"https";
+  const origin=configuredOrigin||(host?`${protocol}://${host}`:null);
+  if(!origin)return null;
+  const jar=await cookies();
+  jar.set(OAUTH_VERIFIER_COOKIE,verifier,{httpOnly:true,sameSite:"lax",secure:process.env.NODE_ENV==="production",path:"/",maxAge:600});
+  const params=new URLSearchParams({provider,redirect_to:`${origin}/auth/callback`,code_challenge:challenge,code_challenge_method:"s256"});
+  return `${url}/auth/v1/authorize?${params.toString()}`;
+}
+
+export async function exchangeOAuthCode(code:string){
+  if(!url||!key)return null;
+  const jar=await cookies();
+  const verifier=jar.get(OAUTH_VERIFIER_COOKIE)?.value;
+  jar.delete(OAUTH_VERIFIER_COOKIE);
+  if(!verifier)return null;
+  const response=await fetch(`${url}/auth/v1/token?grant_type=pkce`,{method:"POST",headers:{apikey:key,"content-type":"application/json"},body:JSON.stringify({auth_code:code,code_verifier:verifier}),cache:"no-store"});
+  if(!response.ok){console.error("Supabase OAuth exchange failed",{status:response.status});return null;}
   return response.json() as Promise<AuthSession>;
 }
 
