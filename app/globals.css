@@ -759,3 +759,47 @@ small {
 @media (max-width: 520px) {
   .socialButtons { grid-template-columns: 1fr; }
 }
+
+
+/* Phone and tablet navigation, readable forms, and touch targets. */
+.dashMain, .panel, .lead > div, .docs div { min-width: 0; }
+.panel, .lead, .docs, .transferReady, .profileCard { overflow-wrap: anywhere; }
+input[type="file"] { max-width: 100%; min-width: 0; }
+textarea { max-width: 100%; }
+summary { cursor: pointer; padding: 12px 0; min-height: 44px; }
+a:focus-visible, button:focus-visible, summary:focus-visible { outline: 3px solid #23745d; outline-offset: 3px; }
+@media (max-width: 1024px) {
+  .dashboard { display: block; }
+  .dashboard aside { display: flex; flex-direction: row; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 16px; padding: 20px; }
+  .dashboard aside .asideLanguage { margin: 0; }
+  .dashboard aside nav { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; margin: 0; width: 100%; }
+  .dashboard aside nav a { display: flex; align-items: center; min-height: 48px; background: #28433f; padding: 12px; }
+  .dashboard aside > small { display: none; }
+  .dashboard .mobileLanguage { display: none; }
+  .dashMain header { flex-wrap: wrap; gap: 16px; }
+  input, textarea, select { font-size: 16px; }
+  .primary, .navButton, .shareButton, .socialButton, .languageToggle button { min-height: 44px; }
+  .miniDocs a, .authLink { display: inline-flex; align-items: center; min-height: 44px; }
+  .panel { margin-bottom: 16px; }
+}
+@media (max-width: 600px) {
+  .nav { height: auto; min-height: 86px; flex-wrap: wrap; gap: 16px; padding: 18px; }
+  .navActions { width: 100%; flex-wrap: wrap; gap: 8px; }
+  .heroActions, .contactActions, .profileTools, .packTitle { flex-wrap: wrap; }
+  .dashboard aside nav { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .metrics { grid-template-columns: 1fr; }
+  .authPage { padding: 100px 18px 30px; align-items: start; }
+  .authPage > .brand { top: 25px; left: 18px; }
+  .authLanguage { top: 20px; right: 18px; }
+  .authCard { padding: 26px 20px; }
+  .authCard h1 { font-size: 36px; }
+  .authCard input, .leadForm input, .leadForm textarea { min-width: 0; width: 100%; font-size: 16px; }
+  .profileTop { flex-wrap: wrap; gap: 16px; padding: 22px; }
+  .profileCard { padding: 36px 20px; }
+  .pack { margin: 0 16px; padding: 22px; }
+  .packTitle h2 { font-size: 28px; }
+  .transferCreator { padding: 18px; }
+  .transferCreator input, .acceptBox input { width: 100%; min-width: 0; font-size: 16px; }
+  .transferReady { padding: 16px; }
+  .transferReady img { max-width: 100%; height: auto; }
+}
