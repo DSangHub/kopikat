@@ -59,3 +59,25 @@ export async function acceptTransfer(token:string,recipientEmail:string){
   const rows=await sql`UPDATE transfers SET status='accepted',recipient_email=${recipientEmail},accepted_at=now() WHERE token_hash=${await tokenHash(token)} AND status='pending' AND expires_at>now() RETURNING id`;
   return rows[0]?{...preview,status:"accepted" as const,recipientEmail}:null;
 }
+
+
+export async function getAccountProfile(userId:string):Promise<Profile|null>{
+  if(!sql)return null;
+  const rows=await sql`SELECT slug FROM profiles WHERE id=${userId} LIMIT 1`;
+  return rows[0]?getProfile(rows[0].slug):null;
+}
+
+export async function saveAccountProfile(userId:string,input:{name:string;title:string;company:string;phone:string;email:string;bio:string;location:string}){
+  if(!sql)throw new Error("Database unavailable");
+  const slug="user-"+userId;
+  const initials=input.name.trim().split(/\s+/).slice(0,2).map(part=>part[0]).join("").toUpperCase();
+  await sql`INSERT INTO profiles (id,slug,name,title,company,phone,email,bio,location,initials)
+    VALUES (${userId},${slug},${input.name},${input.title},${input.company},${input.phone},${input.email},${input.bio},${input.location},${initials})
+    ON CONFLICT (id) DO UPDATE SET name=EXCLUDED.name,title=EXCLUDED.title,company=EXCLUDED.company,phone=EXCLUDED.phone,email=EXCLUDED.email,bio=EXCLUDED.bio,location=EXCLUDED.location,initials=EXCLUDED.initials`;
+}
+
+export async function listAccountLeads(userId:string):Promise<Lead[]>{
+  if(!sql)return [];
+  const rows=await sql`SELECT l.* FROM leads l JOIN profiles p ON p.slug=l.profile_slug WHERE p.id=${userId} ORDER BY l.created_at DESC LIMIT 100`;
+  return rows.map(r=>({id:r.id,profileSlug:r.profile_slug,name:r.name,email:r.email,phone:r.phone,message:r.message,createdAt:r.created_at}));
+}
