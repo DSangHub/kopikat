@@ -78,3 +78,14 @@ export async function isAuthenticated(){
   const response=await fetch(`${url}/auth/v1/user`,{headers:{apikey:key,Authorization:`Bearer ${token}`},cache:"no-store"});
   return response.ok;
 }
+
+
+export async function getCurrentUser(): Promise<{id:string;email:string}|null>{
+  if(!url||!key)return null;
+  const token=(await cookies()).get(ACCESS_COOKIE)?.value;
+  if(!token)return null;
+  const response=await fetch(`${url}/auth/v1/user`,{headers:{apikey:key,Authorization:`Bearer ${token}`},cache:"no-store"});
+  if(!response.ok)return null;
+  const user=await response.json();
+  return typeof user.id==="string" ? {id:user.id,email:user.email||""} : null;
+}
