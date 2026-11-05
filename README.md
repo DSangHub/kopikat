@@ -28,6 +28,10 @@ Files are stored in Postgres with RLS enabled and Data API access revoked. Serve
 
 Each nonempty pack can generate a Phone Tap/QR handoff from its sharing panel. The transfer endpoint checks account ownership. No extra storage API key or email subscription is needed for KopyPak creation.
 
+## iOS app
+
+The App Store build is a Capacitor shell around this site, plus native NFC, QR scanning, Contacts, the iOS share sheet, and Sign in with Apple. The website deploy does not change. Read [APP_STORE.md](APP_STORE.md) for the archive steps, listing copy, privacy answers, and the checklist only the owner can finish.
+
 ## Deploy
 
 Push to GitHub and import the repository in Vercel. Add the environment variables and run both schema scripts before deployment. Program NFC cards with the public profile URL shown in your dashboard or the generated handoff link.

@@ -18,7 +18,18 @@ export async function signInWithPassword(email:string,password:string){
   return response.json() as Promise<AuthSession>;
 }
 
-export async function getOAuthUrl(provider:OAuthProvider){
+function allowedOAuthRedirect(value:string){
+  if(value==="kopycat://auth-callback")return true;
+  try{
+    const target=new URL(value);
+    if(target.pathname!=="/auth/callback"||target.username||target.password)return false;
+    const configured=process.env.NEXT_PUBLIC_APP_URL?.replace(/\/$/,"");
+    if(configured&&target.origin===configured)return target.protocol==="https:"||target.protocol==="http:";
+    return target.protocol==="https:"&&(target.host==="www.kopycat.app"||target.host==="kopycat.app");
+  }catch{return false;}
+}
+
+export async function getOAuthUrl(provider:OAuthProvider,redirectTo?:string){
   if(!url||!key)return null;
   const verifier=randomBytes(32).toString("base64url");
   const challenge=createHash("sha256").update(verifier).digest("base64url");
@@ -28,9 +39,11 @@ export async function getOAuthUrl(provider:OAuthProvider){
   const protocol=requestHeaders.get("x-forwarded-proto")||"https";
   const origin=configuredOrigin||(host?`${protocol}://${host}`:null);
   if(!origin)return null;
+  const destination=redirectTo??`${origin}/auth/callback`;
+  if(!allowedOAuthRedirect(destination))return null;
   const jar=await cookies();
   jar.set(OAUTH_VERIFIER_COOKIE,verifier,{httpOnly:true,sameSite:"lax",secure:process.env.NODE_ENV==="production",path:"/",maxAge:600});
-  const params=new URLSearchParams({provider,redirect_to:`${origin}/auth/callback`,code_challenge:challenge,code_challenge_method:"s256"});
+  const params=new URLSearchParams({provider,redirect_to:destination,code_challenge:challenge,code_challenge_method:"s256"});
   return `${url}/auth/v1/authorize?${params.toString()}`;
 }
 
@@ -67,10 +80,29 @@ export async function signUpWithPassword(email:string,password:string){
   return {ok:true as const,session,error:null};
 }
 
+function cookieOptions(maxAge:number){
+  return {httpOnly:true as const,sameSite:"lax" as const,secure:process.env.NODE_ENV==="production",path:"/",maxAge};
+}
+
 export async function setAuthSession(session:AuthSession){
-  const jar=await cookies();const secure=process.env.NODE_ENV==="production";
-  jar.set(ACCESS_COOKIE,session.access_token,{httpOnly:true,sameSite:"lax",secure,path:"/",maxAge:session.expires_in});
-  jar.set(REFRESH_COOKIE,session.refresh_token,{httpOnly:true,sameSite:"lax",secure,path:"/",maxAge:60*60*24*30});
+  const jar=await cookies();
+  jar.set(ACCESS_COOKIE,session.access_token,cookieOptions(session.expires_in));
+  jar.set(REFRESH_COOKIE,session.refresh_token,cookieOptions(60*60*24*30));
+}
+
+export async function clearAuthSession(){
+  const jar=await cookies();
+  jar.set(ACCESS_COOKIE,"",cookieOptions(0));
+  jar.set(REFRESH_COOKIE,"",cookieOptions(0));
+}
+
+export async function signInWithAppleIdToken(identityToken:string,nonce:string){
+  if(!url||!key||identityToken.length<20||identityToken.length>20000||nonce.length<8||nonce.length>256)return null;
+  const response=await fetch(`${url}/auth/v1/token?grant_type=id_token`,{method:"POST",headers:{apikey:key,"content-type":"application/json"},body:JSON.stringify({provider:"apple",id_token:identityToken,nonce}),cache:"no-store"});
+  if(!response.ok){console.error("Supabase Apple sign-in failed",{status:response.status});return null;}
+  const payload=await response.json() as Partial<AuthSession>;
+  if(!payload.access_token||!payload.refresh_token||!payload.expires_in)return null;
+  return {access_token:payload.access_token,refresh_token:payload.refresh_token,expires_in:payload.expires_in};
 }
 
 export async function isAuthenticated(){

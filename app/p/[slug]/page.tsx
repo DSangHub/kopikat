@@ -1,2 +1,75 @@
-import {notFound} from "next/navigation";import {getProfile} from "@/lib/db";import {getLocale} from "@/lib/i18n";import LanguageToggle from "@/components/LanguageToggle";import ShareTools from "@/components/ShareTools";import LeadForm from "@/components/LeadForm";
-export default async function PublicProfile({params}:{params:Promise<{slug:string}>}){const {slug}=await params;const [p,locale]=await Promise.all([getProfile(slug),getLocale()]);if(!p)notFound();const es=locale==="es";const pack=p.packs[0];return <main className="profilePage"><header className="profileTop"><a className="brand light" href="/"><span>K</span>KopyCat</a><div className="profileTools"><LanguageToggle locale={locale} dark/><ShareTools slug={slug} locale={locale}/></div></header><section className="profileCard"><div className="avatar">{p.initials}</div><div className="verified">✓ {es?"PROFESIONAL VERIFICADO":"VERIFIED PROFESSIONAL"}</div><h1>{p.name}</h1><p className="role">{p.title} · {p.company}</p><p className="bio">{p.bio}</p><div className="contactActions"><a className="primary" href={`data:text/vcard;charset=utf-8,BEGIN:VCARD%0AVERSION:3.0%0AFN:${encodeURIComponent(p.name)}%0ATEL:${p.phone}%0AEMAIL:${p.email}%0AEND:VCARD`} download={`${p.slug}.vcf`}>{es?"Guardar contacto":"Save contact"}</a><a className="circle" href={`tel:${p.phone}`} aria-label={es?"Llamar":"Call"}>☎</a><a className="circle" href={`mailto:${p.email}`} aria-label={es?"Correo":"Email"}>✉</a></div></section>{pack&&<section className="pack"><div className="packTitle"><div><small>KOPYPAK</small><h2>{pack.title}</h2><p>{pack.description}</p></div><span>{pack.documents.length} {es?"elementos":"items"}</span></div><div className="docs">{pack.documents.map((d,i)=><a href={d.url} key={d.id}><i>{String(i+1).padStart(2,"0")}</i><div><b>{d.title}</b><small>{d.kind}</small></div><strong>→</strong></a>)}</div></section>}<section id="contact" className="contactPanel"><small>{es?"HAZ LA CONEXIÓN":"MAKE THE CONNECTION"}</small><h2>{es?`¿Te interesa? Avísale a ${p.name.split(" ")[0]}.`:`Interested? Let ${p.name.split(" ")[0]} know.`}</h2><LeadForm profileSlug={slug} locale={locale}/></section><footer>{es?"Compartido con KopyCat":"Shared with KopyCat"} · {p.location}</footer></main>}
+import Link from "next/link";
+import { notFound } from "next/navigation";
+import { getProfile } from "@/lib/db";
+import { getLocale } from "@/lib/i18n";
+import LanguageToggle from "@/components/LanguageToggle";
+import ShareTools from "@/components/ShareTools";
+import LeadForm from "@/components/LeadForm";
+import SaveContactButton from "@/components/SaveContactButton";
+
+export default async function PublicProfile({ params }: { params: Promise<{ slug: string }> }) {
+  const { slug } = await params;
+  const [p, locale] = await Promise.all([getProfile(slug), getLocale()]);
+  if (!p) notFound();
+  const es = locale === "es";
+  const pack = p.packs[0];
+  return (
+    <main className="profilePage">
+      <header className="profileTop">
+        <a className="brand light" href="/"><span>K</span>KopyCat</a>
+        <div className="profileTools">
+          <LanguageToggle locale={locale} dark />
+          <ShareTools slug={slug} locale={locale} />
+        </div>
+      </header>
+      <section className="profileCard">
+        <div className="avatar">{p.initials}</div>
+        <div className="verified">✓ {es ? "PROFESIONAL VERIFICADO" : "VERIFIED PROFESSIONAL"}</div>
+        <h1>{p.name}</h1>
+        <p className="role">{p.title} · {p.company}</p>
+        <p className="bio">{p.bio}</p>
+        <div className="contactActions">
+          <div className="saveContact">
+            <SaveContactButton locale={locale} name={p.name} phone={p.phone} email={p.email} company={p.company} title={p.title} slug={p.slug} fileName={p.slug} />
+          </div>
+          <a className="circle" href={`tel:${p.phone}`} aria-label={es ? "Llamar" : "Call"}>☎</a>
+          <a className="circle" href={`mailto:${p.email}`} aria-label={es ? "Correo" : "Email"}>✉</a>
+        </div>
+      </section>
+      {pack && (
+        <section className="pack">
+          <div className="packTitle">
+            <div>
+              <small>KOPYPAK</small>
+              <h2>{pack.title}</h2>
+              <p>{pack.description}</p>
+            </div>
+            <span>{pack.documents.length} {es ? "elementos" : "items"}</span>
+          </div>
+          <div className="docs">
+            {pack.documents.map((d, i) => (
+              <a href={d.url} key={d.id}>
+                <i>{String(i + 1).padStart(2, "0")}</i>
+                <div><b>{d.title}</b><small>{d.kind}</small></div>
+                <strong>→</strong>
+              </a>
+            ))}
+          </div>
+        </section>
+      )}
+      <section id="contact" className="contactPanel">
+        <small>{es ? "HAZ LA CONEXIÓN" : "MAKE THE CONNECTION"}</small>
+        <h2>{es ? `¿Te interesa? Avísale a ${p.name.split(" ")[0]}.` : `Interested? Let ${p.name.split(" ")[0]} know.`}</h2>
+        <LeadForm profileSlug={slug} locale={locale} />
+      </section>
+      <footer>
+        {es ? "Compartido con KopyCat" : "Shared with KopyCat"} · {p.location}
+        <span className="profileLegal">
+          <Link href={`/report?profile=${encodeURIComponent(p.slug)}`}>{es ? "Reportar perfil" : "Report profile"}</Link>
+          <Link href="/privacy">{es ? "Privacidad" : "Privacy"}</Link>
+          <Link href="/terms">{es ? "Términos" : "Terms"}</Link>
+        </span>
+      </footer>
+    </main>
+  );
+}

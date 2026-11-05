@@ -1,0 +1,43 @@
+{
+	"appId": "app.kopycat",
+	"appName": "KopyCat",
+	"webDir": "native/www",
+	"server": {
+		"url": "https://www.kopycat.app/dashboard",
+		"cleartext": false,
+		"allowNavigation": [
+			"www.kopycat.app",
+			"kopycat.app"
+		],
+		"errorPath": "offline.html"
+	},
+	"ios": {
+		"contentInset": "never",
+		"backgroundColor": "#f5f0e6",
+		"limitsNavigationsToAppBoundDomains": true,
+		"appendUserAgent": "KopyCatIOS"
+	},
+	"plugins": {
+		"SplashScreen": {
+			"launchAutoHide": true,
+			"backgroundColor": "#f5f0e6",
+			"showSpinner": false,
+			"launchFadeOutDuration": 200
+		},
+		"StatusBar": {
+			"style": "DARK",
+			"backgroundColor": "#f5f0e6",
+			"overlaysWebView": true
+		},
+		"Keyboard": {
+			"resize": "body"
+		}
+	},
+	"packageClassList": [
+		"AppPlugin",
+		"KeyboardPlugin",
+		"SplashScreenPlugin",
+		"StatusBarPlugin",
+		"KopyCatNativePlugin"
+	]
+}
