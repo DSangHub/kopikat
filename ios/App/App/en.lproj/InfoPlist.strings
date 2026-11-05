@@ -1,0 +1,3 @@
+NSCameraUsageDescription = "KopyCat uses the camera when you tap Scan, to read a KopyCat QR code. Photos are not uploaded.";
+NFCReaderUsageDescription = "KopyCat uses NFC to read a KopyCat card and to write your profile link onto a blank card.";
+NSContactsUsageDescription = "KopyCat opens the Contacts card so you can save a professional onto your iPhone. Your address book is not uploaded.";
