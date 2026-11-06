@@ -4,7 +4,7 @@ import { getOAuthUrl, type OAuthProvider } from "@/lib/auth";
 import { isSameOrigin } from "@/lib/http";
 import { oauthCallback } from "@/lib/site";
 
-const schema = z.object({ provider: z.enum(["google", "facebook"]) });
+const schema = z.object({ provider: z.enum(["google", "facebook", "apple"]) });
 
 export async function POST(request: Request) {
   if (!isSameOrigin(request)) return NextResponse.json({ error: "origin" }, { status: 403 });

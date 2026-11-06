@@ -22,6 +22,12 @@ const config: CapacitorConfig = {
     limitsNavigationsToAppBoundDomains: true,
     appendUserAgent: "KopyCatIOS",
   },
+  android: {
+    backgroundColor: "#f5f0e6",
+    appendUserAgent: "KopyCatAndroid",
+    allowMixedContent: false,
+    captureInput: true,
+  },
   plugins: {
     SplashScreen: {
       launchAutoHide: true,
