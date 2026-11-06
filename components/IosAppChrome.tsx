@@ -2,20 +2,21 @@
 
 import { useEffect, useState } from "react";
 import { isNativeCancel, nativeErrorCode, nativeErrorMessage, openAppSettings, readNfcLink, scanKopyCatQr } from "@/lib/native/actions";
-import { isIosApp } from "@/lib/native/platform";
+import { isIosApp, isNativeApp } from "@/lib/native/platform";
 import { isKopyCatUrl } from "@/lib/site";
 
 export default function IosAppChrome({ locale }: { locale: "en" | "es" }) {
   const es = locale === "es";
-  const [ios, setIos] = useState(false);
+  const [native, setNative] = useState(false);
   const [offline, setOffline] = useState(false);
   const [status, setStatus] = useState("");
   const [busy, setBusy] = useState(false);
 
   useEffect(() => {
-    if (!isIosApp()) return;
-    setIos(true);
-    document.body.classList.add("ios-app");
+    if (!isNativeApp()) return;
+    setNative(true);
+    document.body.classList.add("native-app");
+    if (isIosApp()) document.body.classList.add("ios-app");
     let active = true;
     let listener: { remove: () => Promise<void> | void } | undefined;
     const openUrl = (value: string) => {
@@ -61,6 +62,7 @@ export default function IosAppChrome({ locale }: { locale: "en" | "es" }) {
     setOffline(!navigator.onLine);
     return () => {
       active = false;
+      document.body.classList.remove("native-app");
       document.body.classList.remove("ios-app");
       window.removeEventListener("online", online);
       window.removeEventListener("offline", offlineListener);
@@ -96,20 +98,25 @@ export default function IosAppChrome({ locale }: { locale: "en" | "es" }) {
     setBusy(true);
     setStatus("");
     try {
-      const url = await readNfcLink(es ? "Acerca el iPhone a una tarjeta KopyCat." : "Hold your iPhone near a KopyCat card.");
+      const url = await readNfcLink(isIosApp()
+        ? (es ? "Acerca el iPhone a una tarjeta KopyCat." : "Hold your iPhone near a KopyCat card.")
+        : (es ? "Acerca la parte de atrás del teléfono a una tarjeta KopyCat." : "Hold the back of your phone near a KopyCat card."));
       window.location.assign(url);
     } catch (error) {
       if (!isNativeCancel(error)) {
-        setStatus(nativeErrorCode(error) === "unavailable"
+        const code = nativeErrorCode(error);
+        setStatus(code === "unavailable"
           ? (es ? "Este dispositivo no lee tarjetas NFC." : "This device cannot read NFC cards.")
-          : (es ? "No se leyó un enlace de KopyCat." : "A KopyCat link was not read."));
+          : code === "nfc_disabled"
+            ? (es ? "Activa NFC en los ajustes del teléfono y vuelve a intentarlo." : "Turn on NFC in your phone settings, then try again.")
+            : nativeErrorMessage(error, es ? "No se leyó un enlace de KopyCat." : "A KopyCat link was not read."));
       }
     } finally {
       setBusy(false);
     }
   }
 
-  if (!ios) return null;
+  if (!native) return null;
   return (
     <>
       {offline && <p className="offlineBanner" role="status">{es ? "Sin conexión. Tus KopyPaks se abrirán cuando vuelva la red." : "You're offline. Your KopyPaks will open when the connection returns."}</p>}

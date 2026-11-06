@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { saveNativeContact, isNativeCancel, nativeErrorCode, openAppSettings } from "@/lib/native/actions";
-import { useIosApp } from "@/lib/native/platform";
+import { useNativeApp } from "@/lib/native/platform";
 import { buildVcard } from "@/lib/vcard";
 
 export default function SaveContactButton({
@@ -25,7 +25,7 @@ export default function SaveContactButton({
   fileName: string;
 }) {
   const es = locale === "es";
-  const ios = useIosApp();
+  const native = useNativeApp();
   const [status, setStatus] = useState("");
   const [busy, setBusy] = useState(false);
 
@@ -64,7 +64,7 @@ export default function SaveContactButton({
 
   return (
     <>
-      <button type="button" className="primary" disabled={busy} onClick={ios ? saveNative : download}>
+      <button type="button" className="primary" disabled={busy} onClick={native ? saveNative : download}>
         {busy ? (es ? "Abriendo…" : "Opening…") : (es ? "Guardar contacto" : "Save contact")}
       </button>
       {status && <p className="formStatus" role="status">{status}</p>}

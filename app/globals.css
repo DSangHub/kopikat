@@ -890,8 +890,12 @@ body {
   margin: 28px 0 8px;
 }
 .legalPage p,
+.legalPage ol {
+  padding-left: 1.2em;
+}
 .legalPage li {
   line-height: 1.6;
+  margin: 8px 0;
 }
 .legalPage a {
   color: #315f58;
@@ -992,7 +996,8 @@ body {
 .shareMenu button + button {
   margin-top: 8px;
 }
-body.ios-app {
+body.ios-app,
+body.native-app {
   padding-bottom: calc(92px + env(safe-area-inset-bottom));
 }
 .offlineBanner {

@@ -2,12 +2,15 @@
   "name": "@kopycat/native",
   "version": "1.0.0",
   "private": true,
-  "description": "KopyCat iOS native features: share sheet, NFC, QR scanner, Contacts, and Sign in with Apple.",
+  "description": "KopyCat native features for iOS and Android: share sheet, NFC, QR scanner, and Contacts.",
   "main": "src/index.ts",
   "types": "src/index.ts",
   "capacitor": {
     "ios": {
       "src": "ios"
+    },
+    "android": {
+      "src": "android"
     }
   },
   "peerDependencies": {
