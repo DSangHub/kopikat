@@ -32,6 +32,10 @@ Each nonempty pack can generate a Phone Tap/QR handoff from its sharing panel. T
 
 The App Store build is a Capacitor shell around this site, plus native NFC, QR scanning, Contacts, the iOS share sheet, and Sign in with Apple. The website deploy does not change. Read [APP_STORE.md](APP_STORE.md) for the archive steps, listing copy, privacy answers, and the checklist only the owner can finish.
 
+## Android app
+
+The Play build uses the same shell and adds Android share, NFC when the phone has it, a Play services QR scanner, and the system contact editor. Read [GOOGLE_PLAY.md](GOOGLE_PLAY.md) for the release build, Data safety notes, and the steps only the owner can finish.
+
 ## Deploy
 
 Push to GitHub and import the repository in Vercel. Add the environment variables and run both schema scripts before deployment. Program NFC cards with the public profile URL shown in your dashboard or the generated handoff link.

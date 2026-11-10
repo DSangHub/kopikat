@@ -1,7 +1,7 @@
 "use client";
 
 import { isProductionKopyCatUrl, isKopyCatUrl } from "@/lib/site";
-import { isIosApp } from "@/lib/native/platform";
+import { isNativeApp } from "@/lib/native/platform";
 
 export function isNativeCancel(error: unknown) {
   if (error instanceof Error && (error.name === "AbortError" || error.name === "NotAllowedError")) return error.name === "AbortError";
@@ -31,7 +31,7 @@ async function plugin() {
 }
 
 export async function haptic(style: "light" | "medium" | "heavy" | "success" | "warning" | "error" = "light") {
-  if (!isIosApp()) return;
+  if (!isNativeApp()) return;
   try {
     const native = await plugin();
     await native.haptic({ style });
@@ -41,7 +41,7 @@ export async function haptic(style: "light" | "medium" | "heavy" | "success" | "
 }
 
 export async function shareLink(options: { title: string; text?: string; url: string }) {
-  if (isIosApp()) {
+  if (isNativeApp()) {
     const native = await plugin();
     await haptic("light");
     const result = await native.share(options);

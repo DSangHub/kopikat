@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { isNativeCancel, openNativeAuthSession, signInWithAppleNative } from "@/lib/native/actions";
-import { useIosApp } from "@/lib/native/platform";
+import { useAndroidApp, useIosApp } from "@/lib/native/platform";
 
 function AppleLogo() {
   return (
@@ -15,6 +15,7 @@ function AppleLogo() {
 export default function SocialSignIn({ locale, oauth }: { locale: "en" | "es"; oauth: (formData: FormData) => void | Promise<void> }) {
   const es = locale === "es";
   const ios = useIosApp();
+  const android = useAndroidApp();
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
 
@@ -41,7 +42,7 @@ export default function SocialSignIn({ locale, oauth }: { locale: "en" | "es"; o
     }
   }
 
-  async function provider(name: "google" | "facebook") {
+  async function provider(name: "google" | "facebook" | "apple") {
     if (busy) return;
     setBusy(true);
     setError("");
@@ -71,7 +72,7 @@ export default function SocialSignIn({ locale, oauth }: { locale: "en" | "es"; o
     }
   }
 
-  if (!ios) {
+  if (!ios && !android) {
     return (
       <form action={oauth} className="authSocialForm">
         <span>{es ? "Continúa con" : "Continue with"}</span>
@@ -86,7 +87,7 @@ export default function SocialSignIn({ locale, oauth }: { locale: "en" | "es"; o
 
   return (
     <div className="authSocialForm">
-      <button type="button" className="appleSignIn" onClick={apple} disabled={busy}>
+      <button type="button" className="appleSignIn" onClick={ios ? apple : () => provider("apple")} disabled={busy}>
         <AppleLogo />
         {es ? "Iniciar sesión con Apple" : "Sign in with Apple"}
       </button>
